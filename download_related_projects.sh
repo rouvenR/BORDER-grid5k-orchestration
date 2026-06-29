@@ -1,4 +1,4 @@
-git clone git@github.com:rouvenR/BORDER.git && cd BORDER && git checkout final-state-thesis && cd ..
+git clone git@github.com:rouvenR/BORDER.git && cd BORDER && git checkout g5k-launch && cd ..
 git clone https://github.com/rouvenR/jorammq-deployment && cd jorammq-deployment && git checkout final-state-thesis && cd ..
 # JoramMQ zip has to be added to ./jorammq-deployment/jorammq-mqtt-trial-1.22.0-SNAPSHOT.zip
 
