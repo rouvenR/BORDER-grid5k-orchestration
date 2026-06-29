@@ -2,10 +2,6 @@
 
 ssh -J randerer@access.grid5000.fr randerer@grenoble "
     mkdir border &&
-    mkdir mzbench-docker-deployment &&
-    mkdir jorammq-deployment &&
-    mkdir border-data-pipeline &&
-    mkdir vmq_mzbench &&
     cd border &&
     git clone https://github.com/containernet/containernet.git &&
     cd containernet &&
