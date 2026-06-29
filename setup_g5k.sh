@@ -12,7 +12,7 @@ ssh -J randerer@access.grid5000.fr randerer@grenoble "
     mkdir BORDER
 "
 
-scp -r  ./BORDER/* randerer@access.grid5000.fr:grenoble/border/containernet/BORDER/
+scp -r  ./BORDER randerer@access.grid5000.fr:grenoble/border/containernet/
 scp -r ./mzbench-docker-deployment randerer@access.grid5000.fr:grenoble
 scp -r ./jorammq-deployment randerer@access.grid5000.fr:grenoble
 scp -r ./border-data-pipeline randerer@access.grid5000.fr:grenoble
