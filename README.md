@@ -9,18 +9,16 @@
 
 > For JoramMQ deployment, the according JoramMQ zip has to be added to ./jorammq-deployment/jorammq-mqtt-trial-1.22.0-SNAPSHOT.zip (search and replace in project for other versions)
 
-## BORDER Setup
-
-### Copy (once)
-```bash
-ssh randerer@access.grid5000.fr
-ssh grenoble
-mkdir border
-git clone https://github.com/mininet/mininet
-```
 
 ## Note on G5K Username
 Please search for "randerer" across the whole code basis and replace it with your personal G5K user name
+
+## Initialize G5K
+Run the following command once to up
+
+```bash
+./setup_g5k.sh
+```
 
 ## Sync from local
 When working on this project, the easiest way to apply changes is to work on the projects locally, then use the following script to upload them to the G5K network file system. 
@@ -28,6 +26,7 @@ When working on this project, the easiest way to apply changes is to work on the
 ```bash
 ./g5k_utils/upload_relevant_code_to_g5k.sh
 ```
+
 
 # The Projects
 This section gives a brief overview of all sub-projects (this one and the ones added by `./download_related_projects.sh`).
@@ -126,7 +125,9 @@ sudo-g5k home/randerer/border_setup.sh
 # Execution Flow
 
 ## Automated
+
 1. launch_experiments.sh
+    - includes configuration, either manual (e.g. step-sized) or using `./border-data-pipeline/categorial_latin_hypercube_sampling.py`
 2. launch_border_via_ssh.sh
 3. border_setup_launch.sh
 4. flexible_router.py
@@ -221,26 +222,6 @@ python3 categorial_latin_hypercube_sampling.py --samples 20 --clients "2,5,10,20
 python3 ./border-data-pipeline/categorial_latin_hypercube_sampling.py --samples 50 --clients_qos0 "50,100,150" --throughput_qos0 "100,4375,8750,13125,17500" --size_qos0 "100,250,500,750,1000" --clients_qos1 "50,100,150" --throughput_qos1 "100,4375,8750,13125,17500" --size_qos1 "100,250,500,750,1000" --clients_qos2 "50,100,150" --throughput_qos2 "100,1250,2500,3750,5000" --size_qos2 "100,250,500,750,1000" --cpu "2,4,8,16"
 ```
 
-
-
-# Utils
-
-## Docker
-
-### Remove all docker containers
-```bash
-docker stop $(docker ps -a -q)
-docker rm $(docker ps -a -q)
-```
-
-## ContainerNet
-
-### Cleanup
-```bash
-sudo-g5k env "PATH=$PATH" mn -c
-```
-
-
 # Debugging
 
 ## Read mqtt messages
@@ -251,89 +232,13 @@ sudo mosquitto_sub -v -t "test" > mylog.txt
 
 ## Mininet Cleanup
 ```bash
-c
+sudo-g5k env "PATH=$PATH" mn -c
 ```
 
-# Other
+## Remove all Docker containers
 ```bash
-python3 calculate_messages.py --throughput 1000
-python3 calculate_messages.py --throughput 10000
-python3 calculate_messages.py --throughput 20000
-python3 calculate_messages.py --throughput 30000
-python3 calculate_messages.py --throughput 40000
-python3 calculate_messages.py --throughput 50000
-python3 calculate_messages.py --throughput 60000
-python3 calculate_messages.py --throughput 70000
-python3 calculate_messages.py --throughput 80000
-python3 calculate_messages.py --throughput 90000
-python3 calculate_messages.py --throughput 100000
-
-
-python3 calculate_messages.py --throughput 100 --clients 100
-python3 calculate_messages.py --throughput 5000 --clients 100
-python3 calculate_messages.py --throughput 10000 --clients 100
-python3 calculate_messages.py --throughput 15000 --clients 100
-python3 calculate_messages.py --throughput 20000 --clients 100
-python3 calculate_messages.py --throughput 25000 --clients 100
-python3 calculate_messages.py --throughput 30000 --clients 100
-python3 calculate_messages.py --throughput 35000 --clients 100
-python3 calculate_messages.py --throughput 40000 --clients 100
-python3 calculate_messages.py --throughput 45000 --clients 100
-python3 calculate_messages.py --throughput 50000 --clients 100
-python3 calculate_messages.py --throughput 55000 --clients 100
-python3 calculate_messages.py --throughput 60000 --clients 100
-python3 calculate_messages.py --throughput 65000 --clients 100
-python3 calculate_messages.py --throughput 70000 --clients 225
-python3 calculate_messages.py --throughput 85000 --clients 225
-python3 calculate_messages.py --throughput 100000 --clients 225
-
-
-python3 calculate_messages.py --throughput 100 --clients 100
-python3 calculate_messages.py --throughput 2500 --clients 100
-python3 calculate_messages.py --throughput 5000 --clients 100
-python3 calculate_messages.py --throughput 7500 --clients 100
-python3 calculate_messages.py --throughput 10000 --clients 100
-python3 calculate_messages.py --throughput 12500 --clients 100
-python3 calculate_messages.py --throughput 15000 --clients 100
-python3 calculate_messages.py --throughput 17500 --clients 100
-python3 calculate_messages.py --throughput 20000 --clients 100
-python3 calculate_messages.py --throughput 22500 --clients 100
-python3 calculate_messages.py --throughput 25000 --clients 100
-python3 calculate_messages.py --throughput 27500 --clients 100
-python3 calculate_messages.py --throughput 30000 --clients 100
-python3 calculate_messages.py --throughput 32500 --clients 100
-
-
-python3 calculate_messages.py --throughput 100 --clients 100
-python3 calculate_messages.py --throughput 100 --clients 500
-python3 calculate_messages.py --throughput 100 --clients 1000
-python3 calculate_messages.py --throughput 100 --clients 1500
-python3 calculate_messages.py --throughput 100 --clients 2000
-python3 calculate_messages.py --throughput 100 --clients 2500
-python3 calculate_messages.py --throughput 100 --clients 3000
-python3 calculate_messages.py --throughput 100 --clients 3500
-python3 calculate_messages.py --throughput 100 --clients 4000
-python3 calculate_messages.py --throughput 100 --clients 4500
-python3 calculate_messages.py --throughput 100 --clients 5000
-```
-
-
-
-# Logs
-```bash
-docker container cp mn.jorammq0:/home/jorammq/log/server-0.0.log logs/
-```
-
-
-# Zipped Downloads
-```bash
-zip -r logs.zip logs/
-scp randerer@access.grid5000.fr:grenoble/logs.zip ./logs/
-```
-
-```bash
-zip -r results.zip results/
-scp randerer@access.grid5000.fr:grenoble/results.zip ./border-data-pipeline/inputs/result_data/
+docker stop $(docker ps -a -q)
+docker rm $(docker ps -a -q)
 ```
 
 
