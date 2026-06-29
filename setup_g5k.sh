@@ -17,4 +17,14 @@ scp -r ./mzbench-docker-deployment randerer@access.grid5000.fr:grenoble
 scp -r ./jorammq-deployment randerer@access.grid5000.fr:grenoble
 scp -r ./border-data-pipeline randerer@access.grid5000.fr:grenoble
 
+chmod +x ./g5k_utils/upload_relevant_code_to_g5k.sh
 ./g5k_utils/upload_relevant_code_to_g5k.sh
+
+ssh -J randerer@access.grid5000.fr randerer@grenoble "
+    chmod +x border_setup_kadeploy.sh &&
+    chmod +x border_setup_launch.sh &&
+    chmod +x launch_border_via_ssh.sh &&
+    chmod +x data_pipeline.sh &&
+    chmod +x launch_experiments.sh &&
+    chmod +x ./border/containernet/BORDER/start_clients.sh
+"
