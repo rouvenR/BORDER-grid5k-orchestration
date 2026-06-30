@@ -14,8 +14,6 @@ scp "$PROJECT_ROOT_DIR/BORDER/start_clients.sh" randerer@access.grid5000.fr:gren
 pids+=("$!")
 scp "$PROJECT_ROOT_DIR/BORDER/clients/alpine_container/build.sh" randerer@access.grid5000.fr:grenoble/border/containernet/BORDER/clients/alpine_container/build.sh &
 pids+=("$!")
-scp "$PROJECT_ROOT_DIR/BORDER/border_setup.sh" randerer@access.grid5000.fr:grenoble/border_setup.sh &
-pids+=("$!")
 scp "$PROJECT_ROOT_DIR/BORDER/border_setup_launch.sh" randerer@access.grid5000.fr:grenoble/border_setup_launch.sh &
 pids+=("$!")
 scp "$PROJECT_ROOT_DIR/BORDER/launch_border_via_ssh.sh" randerer@access.grid5000.fr:grenoble/launch_border_via_ssh.sh &
@@ -38,7 +36,7 @@ scp "$PROJECT_ROOT_DIR/mzbench-docker-deployment/build.sh" randerer@access.grid5
 pids+=("$!")
 scp "$PROJECT_ROOT_DIR/mzbench-docker-deployment/run.sh" randerer@access.grid5000.fr:grenoble/mzbench-docker-deployment/run.sh &
 pids+=("$!")
-scp "$PROJECT_ROOT_DIR/automated_data_pipeline.sh" randerer@access.grid5000.fr:grenoble/automated_data_pipeline.sh &
+scp "$PROJECT_ROOT_DIR/g5k_utils/automated_data_pipeline.sh" randerer@access.grid5000.fr:grenoble/automated_data_pipeline.sh &
 pids+=("$!")
 scp -r "$PROJECT_ROOT_DIR/border-data-pipeline/"*.py randerer@access.grid5000.fr:grenoble/border-data-pipeline/
 scp "$PROJECT_ROOT_DIR/data_pipeline.sh" randerer@access.grid5000.fr:grenoble/data_pipeline.sh
