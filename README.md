@@ -134,7 +134,7 @@ sudo-g5k home/randerer/border_setup.sh
 5. start_clients.sh
 6. data_pipeline.sh
     1. combine_split_subscriber_files.py
-    2. visualize.py
+    2. visualize_individual_experiment.py
     3. compute_throughput_metrics.py
     4. train_throughput_regression.py
 7. train_svm_regression.py

@@ -53,8 +53,9 @@ elif [ "$CHECK_LOG_EXIT_CODE" -ne 0 ]; then
     exit "$CHECK_LOG_EXIT_CODE"
 fi
 
+python3 ./border-data-pipeline/move_single_broker_results.py
 python3 ./border-data-pipeline/combine_split_subscriber_files.py --timestamp "$TIMESTAMP"
-python3 ./border-data-pipeline/visualize.py --timestamp "$TIMESTAMP"
+python3 ./border-data-pipeline/visualize_individual_experiment.py --timestamp "$TIMESTAMP"
 python3 ./border-data-pipeline/compute_throughput_metrics.py --timestamp "$TIMESTAMP" --broker-name jorammq
 
 if [ -z "$VARIABLE_COLUMN" ]; then

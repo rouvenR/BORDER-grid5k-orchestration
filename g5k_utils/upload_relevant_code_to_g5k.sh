@@ -38,8 +38,12 @@ scp "$PROJECT_ROOT_DIR/mzbench-docker-deployment/run.sh" randerer@access.grid500
 pids+=("$!")
 scp "$PROJECT_ROOT_DIR/g5k_utils/automated_data_pipeline.sh" randerer@access.grid5000.fr:grenoble/automated_data_pipeline.sh &
 pids+=("$!")
-scp -r "$PROJECT_ROOT_DIR/border-data-pipeline/"*.py randerer@access.grid5000.fr:grenoble/border-data-pipeline/
-scp "$PROJECT_ROOT_DIR/data_pipeline.sh" randerer@access.grid5000.fr:grenoble/data_pipeline.sh
+scp -r "$PROJECT_ROOT_DIR/border-data-pipeline/"*.py randerer@access.grid5000.fr:grenoble/border-data-pipeline/ &
+pids+=("$!")
+scp "$PROJECT_ROOT_DIR/check_logs_for_errors.py" randerer@access.grid5000.fr:grenoble/check_logs_for_errors.py &
+pids+=("$!")
+scp "$PROJECT_ROOT_DIR/data_pipeline.sh" randerer@access.grid5000.fr:grenoble/data_pipeline.sh &
+pids+=("$!")
 
 # scp "$PROJECT_ROOT_DIR/jorammq-deployment/jorammq-mqtt-trial-1.22.0-SNAPSHOT.zip" randerer@access.grid5000.fr:grenoble/jorammq-deployment/jorammq-mqtt-trial-1.22.0-SNAPSHOT.zip
 
