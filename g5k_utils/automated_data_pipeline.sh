@@ -34,9 +34,10 @@ done
 zip -r results_${TIMESTAMP}.zip results/
 cd /border-project/
 
-# TODO cp should ignore inputs and outputs?
-cp -r /home/randerer/border-data-pipeline border-data-pipeline
+mkdir border-data-pipeline
+cp /home/randerer/border-data-pipeline/* border-data-pipeline
 cp /home/randerer/data_pipeline.sh data_pipeline.sh
+cp /home/randerer/check_logs_for_errors.py check_logs_for_errors.py
 cp /home/randerer/results_${TIMESTAMP}.zip results.zip
 unzip results.zip
 cd border-data-pipeline
