@@ -1,0 +1,78 @@
+---
+name: debian-nfs-border
+version: 1
+arch: x86_64
+alias: debian11-arm64-nfs
+description: debian 11 (bullseye) nfs extended with BORDER mqtt benchmarking installation
+author: rouven-raphael.anderer@grenoble-inp.org
+visibility: private
+destructive: false
+os: linux
+image:
+  file: environment_image_border_v2.tar.zst
+  kind: tar
+  compression: zstd
+postinstalls:
+- archive: server:///grid5000/postinstalls/g5k-postinstall.tgz
+  compression: gzip
+  script: g5k-postinstall --net debian --net hpc --fstab nfs --restrict-user current
+    --disk-aliases
+boot:
+  kernel: "/vmlinuz"
+  initrd: "/initrd.img"
+  kernel_params: modprobe.blacklist=nouveau
+filesystem: ext4
+partition_type: 131
+multipart: false
+---
+name: debian11-nfs
+version: 2025032710
+arch: ppc64le
+alias: debian11-ppc64-nfs
+description: debian 11 (bullseye) for ppc64le - nfs
+author: support-staff@lists.grid5000.fr
+visibility: public
+destructive: false
+os: linux
+image:
+  file: server:///grid5000/images/debian11-ppc64-nfs-2025032710.tar.zst
+  kind: tar
+  compression: zstd
+postinstalls:
+- archive: server:///grid5000/postinstalls/g5k-postinstall.tgz
+  compression: gzip
+  script: g5k-postinstall --net debian --net hpc --fstab nfs --restrict-user current
+    --disk-aliases
+boot:
+  kernel: "/vmlinux"
+  initrd: "/initrd.img"
+  kernel_params: modprobe.blacklist=nouveau
+filesystem: ext4
+partition_type: 131
+multipart: false
+---
+name: debian11-nfs
+version: 2026030516
+arch: x86_64
+alias: debian11-x64-nfs
+description: debian 11 (bullseye) for x86_64 - nfs
+author: support-staff@lists.grid5000.fr
+visibility: public
+destructive: false
+os: linux
+image:
+  file: server:///grid5000/images/debian11-x64-nfs-2026030516.tar.zst
+  kind: tar
+  compression: zstd
+postinstalls:
+- archive: server:///grid5000/postinstalls/g5k-postinstall.tgz
+  compression: gzip
+  script: g5k-postinstall --net debian --net hpc --fstab nfs --fstab ondemand --restrict-user
+    current --disk-aliases
+boot:
+  kernel: "/vmlinuz"
+  initrd: "/initrd.img"
+  kernel_params: modprobe.blacklist=nouveau
+filesystem: ext4
+partition_type: 131
+multipart: false
