@@ -1,6 +1,6 @@
 
 # Setup Code
-
+This section contains instructions for initial setup and how to apply code updates.
 
 ## Download related projects
 ```bash
@@ -14,7 +14,7 @@
 Please search for "randerer" across the whole code basis and replace it with your personal G5K user name
 
 ## Initialize G5K
-Run the following command once to up
+Run the following command once. This uploads all relevant code to G5K and created required folders and permissions.
 
 ```bash
 ./setup_g5k.sh
@@ -27,6 +27,19 @@ When working on this project, the easiest way to apply changes is to work on the
 ./g5k_utils/upload_relevant_code_to_g5k.sh
 ```
 
+## G5K Custom Environment
+A G5K custom environment exists that contains all the required installations (e.g. Docker) for experiment efficiency and reproducability.
+
+## Option 1 (default): Reuse Custom Environment
+The root folder of your home directory on G5K must contain the `border-custom-environment.yaml` and `environment_image_border_v2.tar.zst`. The former is part of this repository and automatically uploaded. The latter has to be copied from TODO.
+
+## Option 2: Rebuild / Update Custom Environment
+Follow the [G5K environment creation guide](https://www.grid5000.fr/w/Environment_creation). The existing environment was built using the script shown below on the deployment node. Adjust it to your updates to make the process reproducable.
+
+```bash
+# On G5K /home/randerer
+border_setup_kadeploy.sh
+```
 
 # The Projects
 This section gives a brief overview of all sub-projects (this one and the ones added by `./download_related_projects.sh`).
@@ -35,19 +48,272 @@ This section gives a brief overview of all sub-projects (this one and the ones a
 This project contains the skeleton, that contains all the orchestration that is required to upload, launch and use the other projects with G5K.
 
 ## ./BORDER
+[Github](https://github.com/rouvenR/BORDER/tree/g5k-launch)
+
 This project contains the extensions of the BORDER framework, which is used as foundation for benchmarking the broker under test and create the MQTT and Hardware traces.
 
 ## ./jorammq-deployment
+[Github](https://github.com/rouvenR/jorammq-deployment/tree/final-state-thesis)
+
 This project contains the files required to build an image of the JoramMQ container and save the image locally.
 
 ## ./mzbench-docker-deployment
+[Github](https://github.com/rouvenR/mzbench-docker-deployment/tree/final-state-thesis)
+
 This project contains the files required to build an image of the mzbench container and save the image locally. This image is used as publisher container in the extended BORDER framework.
 
 ## ./vmq_mzbench
+[Github](https://github.com/rouvenR/vmq_mzbench/tree/final-state-thesis)
+
 This project contains the extensions of the vmq_mzbench library. The original library adds an MQTT worker to MZBench. The extension contains adjustments to the BORDER message format (e.g. to include sender timestamp in the message payload) and the new scenarios (e.g. for parallel QoS levels and the designed industry scenarios).
 
 ## ./border-data-pipeline
+[Github](https://github.com/rouvenR/border-data-pipeline/tree/final-state-thesis)
+
 This project contains the scripts used to analyse and process the traces created by the extended BORDER framework as well as to train the prediction models.
+
+
+# Running Application
+This section describes different flows of running the application. All of the flows use a default experiment configuration. To customize the experiments, refer to "Execution Flow -> ./BORDER/launch_experiments.sh" in the next section.
+
+## Fully Automated Flow
+In this flow, experiments are scheduled at night and a dedicated node per experiment set is scheduled at 04:30 in the morning to run the data analysis pipeline. Results can be retrieved from "home/randerer/processed_results" folder on G5K.
+
+```bash
+./connect_to_g5k_frontend.sh
+./launch_experiments.sh --night --analyze-data
+```
+
+## Automated Experiments with manual data analysis
+This flow executes the configured experiments directly. After waiting for the results, data analysis is executed on G5K frontend.
+
+```bash
+./connect_to_g5k_frontend.sh
+./launch_experiments.sh
+
+# Wait for experiments to finish (check with "oarstat -u" until there is no active nodes)
+
+./data_pipeline.sh --timestamp <TIMESTAMP> # Find timestamp in logs or under s ./results/single_broker_results/
+```
+
+## Automated Experiments with local data analysis
+In this flow, experiments are started directly, but instead of the data analysis running on G5K, the results are first downloaded to the local machine. While this is slightly more inefficient and takes up space on your local machine, inspection of results and visualisations may be easier.
+
+```bash
+./connect_to_g5k_frontend.sh
+./launch_experiments.sh
+exit
+
+# Wait for experiments to finish
+
+./g5k_utils/get_result_data_from_zip.sh
+./data_pipeline.sh --timestamp <TIMESTAMP> # Find timestamp in logs or under s ./border-data-pipeline/inputs/result_data
+```
+
+## Fully manual flow
+In this flow, a node is launched manually as well as the experiment and launch of clients after connecting to the node. This is helpful for debugging when making changes to any of the components.
+
+```bash
+oarsub -I -t deploy
+kadeploy3 -a border-custom-environment.yaml -o /tmp/manual_launch_n.txt
+ssh MACHINE_ID
+
+# Set --run-tests to "true" for automated tests 
+sudo ./border_setup_launch.sh --run-tag syntax_test --clients-qos0 1 --clients-qos1 250 --clients-qos2 1 --delay-qos0 12 --delay-qos1 14 --delay-qos2 12 --messages-qos0 0 --messages-qos1 75000 --messages-qos2 0 --size-qos0 100 --size-qos1 100 --size-qos2 100 --cpu 2 --ram-limit 1g --broker-type JORAMMQ --run-tests false
+
+# Wait for framework to launch
+
+sudo ./start_clients.sh --run-tag 20260515234745_3__C01_D012_M00_S0100_C1250_D14_M175000_S1100_C21_D212_M20_S2100_CPU2_RAM1g --clients-qos0 1 --clients-qos1 250 --clients-qos2 1 --delay-qos0 12 --delay-qos1 14 --delay-qos2 12 --messages-qos0 0 --messages-qos1 75000 --messages-qos2 0 --size-qos0 100 --size-qos1 100 --size-qos2 100 --brokers 1 --name /home/randerer/results/single_broker_results
+
+# Wait for experiments to finish
+
+./data_pipeline.sh --timestamp <TIMESTAMP> # Find timestamp in logs or under s ./border-data-pipeline/inputs/result_data
+
+```
+
+## Next steps
+All of the flows explained above will create the following artefacts. Depending on the flow executed, they are either on your G5K home directory or on your local machine.
++ raw MQTT and hardware traces (./border-data-pipeline/inputs/result_data)
++ metrics files (./border-data-pipeline/inputs/training_data)
++ experiment visualisations (./border-data-pipeline/outputs/plots/raw)
++ regression plots (./border-data-pipeline/outputs/plots/regressions)
++ regression json files (./border-data-pipeline/outputs/plots/regressions)
+
+The metrics files and the regression json files can be used to train the machine learning models and additive model respectively. Please follow the according sections under "Execution Flow" below to train the model. This step is not included in the automation pipeline because it is usually desired to run multiple experiment sets before creating a prediction model (e.g. combining multiple regression json files for different variables for the additive model or combining multiple metrics files into one for the ML models).
+
+# Execution Flow
+This section describes the execution flow and all of its individual components. Note that for normal execution, you don't need to invoke these manually. They are automatically run when using the commands described above under "Running Application".
+
+The automated flow has two layers:
+
+1. The experiment orchestration on Grid5000, which reserves nodes, deploys the environment, launches BORDER, and collects raw results.
+2. The analysis layer, which converts raw logs and packet traces into metrics and optionally trains prediction models.
+
+### 1. `./BORDER/launch_experiments.sh`
+
+This is the entry point for batch execution.
+
+- Defines the experiment matrix in `CONFIGS`. Each row contains the per-QoS client count, delay, message count, message size, CPU, RAM limit, scenario, and connect rate.
+- Builds one `run_tag` per configuration. That timestamp-based tag is the primary identifier used throughout the whole pipeline.
+- Submits one `oarsub` job per configuration and runs `kadeploy3` before starting the actual BORDER launch.
+- Calls `./launch_border_via_ssh.sh` inside the reserved job with all resolved parameters.
+- Supports `--night` to add `-t night` to the experiment reservation.
+- Supports `--analyze-data` to schedule `./automated_data_pipeline.sh` for the same `BASE_START_TIME` on the next day at `04:30:00`.
+- Uses `VARIABLE_COLUMN` to decide which independent variable should be used when the automated analysis step trains regressions. If not set, it defaults to `message_size_qos1`.
+
+Typical use:
+
+```bash
+# Experiments & automated analysis at night
+./BORDER/launch_experiments.sh --night --analyze-data
+
+# Immediate execution of experiments without automated analysis
+./BORDER/launch_experiments.sh
+```
+
+### 2. `./BORDER/launch_border_via_ssh.sh`
+
+This script bridges the Grid5000 reservation with the target node.
+
+- Validates the required experiment arguments.
+- Reads the deployed machine name from `/tmp/<RUN_TAG>.txt`, which is produced by `kadeploy3`.
+- Opens an SSH session to keep the allocated node alive.
+- Starts `sudo ./border_setup_launch.sh ...` on the deployed host with the complete experiment configuration.
+
+Its role is transport and delegation: it does not create the topology itself, it forwards the resolved configuration to the machine that will run the benchmark.
+
+### 3. `./BORDER/border_setup_launch.sh`
+
+This script prepares the remote execution environment and coordinates the experiment lifetime.
+
+- Parses the complete experiment configuration, including `--broker-type`, `--cpu`, `--ram-limit`, `--scenario`, and `--run-tests`.
+- Adjusts Docker defaults so broker containers can use a sufficiently high `nofile` limit.
+- Waits for the cluster launch window and then schedules `sudo ./start_clients.sh ...` in the background.
+- Starts the actual broker topology by invoking `sudo ../venv/bin/python3 flexible_router.py --brokers 1 ...`.
+- Acts as the runtime coordinator on the remote node: environment setup first, topology start second, client load generation third.
+
+This is the step where the abstract experiment configuration becomes a concrete runnable benchmark on the deployed machine.
+
+### 4. `./BORDER/flexible_router.py`
+
+This Python program builds the Containernet topology and starts the broker containers.
+
+- Creates the Linux routers, switches, Docker containers, and per-broker networks used by BORDER.
+- Supports multiple broker types such as `JORAMMQ`, `RABBITMQ`, `EMQX`, `VERNEMQ`, `HIVEMQ`, and `MOSQUITTO`.
+- Applies CPU and RAM limits to broker containers.
+- Configures per-link delays and networking between broker, publisher, and subscriber nodes.
+- Loads local broker images where required, for example from the JoramMQ image archive.
+
+In practice, this is the stage that instantiates the benchmark environment the clients will later interact with.
+
+### 5. `./BORDER/start_clients.sh`
+
+This script generates the experiment traffic and records the raw measurement artefacts.
+
+- Validates the per-QoS client, message, delay, and size parameters.
+- Starts `docker stats` logging and `tcpdump` capture files before traffic generation begins.
+- Launches the subscriber workload inside the subscriber containers.
+- Calculates total message counts and derives scenario-specific subscriber concurrency.
+- Handles scenario-specific subscription layouts, including shared subscriptions and request/response style traffic.
+- Writes logs and packet captures into the configured results directory, typically `/home/randerer/results/single_broker_results`.
+
+The output of this step is the raw data later consumed by the analysis pipeline: container stats, subscriber logs, experiment logs, and `.pcap` traces.
+
+### 6. `./data_pipeline.sh`
+
+This is the post-processing entry point once result are available. Can be run on G5K node, frontend or locally after running `./g5k_utils/get_result_data_from_zip.sh`
+
+- Accepts `--timestamp` to select one run family.
+- Optionally accepts `--variable-column` to decide whether regression training should be included during this pass.
+- Runs `python3 check_logs_for_errors.py` first and stores any detected issues in `logs/<TIMESTAMP>_errors.txt`.
+- Moves and normalizes raw result folders with `move_single_broker_results.py`.
+- Merges subscriber output files with `combine_split_subscriber_files.py`.
+- Creates visual inspection plots with `visualize_individual_experiment.py`.
+- Computes the derived metrics CSV with `compute_throughput_metrics.py`.
+- If `--variable-column` is set, trains several single-target regressions with `train_throughput_regression.py` for CPU, RAM, throughput, and normalized factor targets.
+
+This is the point where raw benchmark artefacts become structured training data.
+
+### 7. `./border-data-pipeline/train_svm_regression.py`
+
+This is a separate model-training step that operates on an already prepared metrics CSV.
+
+- Reads `inputs/training_data/<TIMESTAMP>_metrics.csv`.
+- Trains SVM regressors for throughput, CPU, and RAM targets.
+- Supports cross-validation only, or holdout validation via `--validate-against`.
+- Can optionally tune hyperparameters with `--random-search-iterations`.
+- Can include or exclude capacity-limited runs with `--include-capacity-limited`.
+
+Use this when you want a second modelling pass beyond the automatic per-target regressions triggered by `data_pipeline.sh`.
+
+### 8. `./border-data-pipeline/train_random_forest.py`
+
+This is the random-forest counterpart to the SVM training script.
+
+- Uses the same metrics input convention as the SVM script.
+- Trains random-forest regressors for throughput, CPU, and RAM targets.
+- Supports optional holdout validation with `--validate-against`.
+- Supports optional randomized hyperparameter search with `--random-search-iterations`.
+- Stores trained models and evaluation output in the random-forest regression output directory.
+
+Use this when you want a tree-based baseline or a model family that captures non-linear interactions differently from the SVM pipeline.
+
+### 9. `./border-data-pipeline/predict_additive_model.py`
+
+This script combines multiple regression component JSON files and evaluates their additive prediction against a validation metrics CSV.
+
+- Loads all component JSONs that match `--model-dir`
+- Requires `--validate-against` to compare predictions with ground truth metrics.
+- Supports `--base-load` and `--include-capacity-limited` for evaluation behavior.
+
+Important preparation step:
+
+- The regression JSON outputs that should be combined must be collected in one dedicated folder (for example, one folder for CPU target components and one for RAM target components).
+- Move or copy the selected JSON files from the regression output directories into that folder before running the additive model.
+- Point `--model-dir` to that folder using a glob, for example `./border-data-pipeline/outputs/regressions/joram/ram/*.json`.
+
+As of now, the resource translation factors have to be added manually to these dictionaries in `./border-data-pipeline/predict_additive_model.py`. They have to be retrieved by running the same configuration of experiments on different CPU and RAM availabilities.
+```python
+CPU_TRANSLATION = {
+    "2": 1.0,
+    "4": 0.93,
+    "8": 0.7,
+    "16": 0.58,
+}
+
+RAM_TRANSLATION = {
+    "0.5": 1.5,
+    "1": 1.0,
+    "2": 0.64,
+    "4": 0.48,
+    "8": 0.22,
+}
+```
+
+Typical use:
+
+```bash
+python3 ./border-data-pipeline/predict_additive_model.py \
+	--model-dir './border-data-pipeline/outputs/regressions/joram/ram/*.json' \
+	--validate-against ./border-data-pipeline/inputs/training_data/validation_data_metrics_scenario_1_adjusted_throughput.csv \
+	--base-load 16.65 \
+	--include-capacity-limited
+```
+
+### Summary of Inputs and Outputs
+
+1. `launch_experiments.sh` consumes experiment configurations and produces Grid5000 jobs plus `run_tag` identifiers.
+2. `launch_border_via_ssh.sh` consumes the reservation output and starts the remote orchestration step.
+3. `border_setup_launch.sh` consumes the experiment parameters and produces a running BORDER topology plus a scheduled client workload.
+4. `flexible_router.py` consumes broker/resource settings and produces the live Containernet broker environment.
+5. `start_clients.sh` consumes the topology and produces raw logs, stats, and packet captures.
+6. `data_pipeline.sh` consumes the raw artefacts and produces metrics, plots, and optional single-target regressions.
+7. `train_svm_regression.py` consumes the metrics CSV and produces SVM models and evaluation results.
+8. `train_random_forest.py` consumes the metrics CSV and produces random-forest models and evaluation results.
+9. `predict_additive_model.py` consumes a prepared folder of selected regression JSON components plus a validation metrics CSV, and produces additive-model evaluation metrics (MAE, RMSE, MaxError).
+
+For step 9 specifically, collect the JSON outputs you want to combine into a dedicated input folder (or use a dedicated output subfolder), then pass that folder as a glob via `--model-dir`.
+
 
 
 # Grid5000 Important Commands
@@ -67,162 +333,12 @@ oardel 12345 # <- delete job
 oarsub -l nodes=2 -I # <- connects to the first node, load has to be distributed manually (cross connection possible with oarsh)
 ```
 
-# Running individual Applications
-
-## JoramMQ Setup
-
-### Copy (once)
-```bash
-scp ./jorammq-mqtt-trial-1.21.0-SNAPSHOT.zip randerer@access.grid5000.fr:grenoble/jorammq/
-```
-
-### Start
-```bash
-ssh randerer@access.grid5000.fr
-ssh grenoble
-oarsub -I
-cp -r ./jorammq/jorammq-mqtt-1.21.0-SNAPSHOT ./tmp/
-./tmp/jorammq-mqtt-1.21.0-SNAPSHOT/bin/jorammq-server
-```
-
-## BORDER
-
-### Using Kadeploy
-
-```bash
-oarsub -I -t deploy
-kadeploy3 -a border-custom-environment.yaml -o /tmp/manual_launch_n.txt
-ssh MACHINE_ID
-
-# Set --run-tests to "true" for automated tests 
-sudo ./border_setup_launch.sh --run-tag syntax_test --clients-qos0 1 --clients-qos1 250 --clients-qos2 1 --delay-qos0 12 --delay-qos1 14 --delay-qos2 12 --messages-qos0 0 --messages-qos1 75000 --messages-qos2 0 --size-qos0 100 --size-qos1 100 --size-qos2 100 --cpu 2 --ram-limit 1g --broker-type JORAMMQ --run-tests false
-
-sudo ./start_clients.sh --run-tag 20260515234745_3__C01_D012_M00_S0100_C1250_D14_M175000_S1100_C21_D212_M20_S2100_CPU2_RAM1g --clients-qos0 1 --clients-qos1 250 --clients-qos2 1 --delay-qos0 12 --delay-qos1 14 --delay-qos2 12 --messages-qos0 0 --messages-qos1 75000 --messages-qos2 0 --size-qos0 100 --size-qos1 100 --size-qos2 100 --brokers 1 --name /home/randerer/results/single_broker_results
-
-```
-
-
-### Automation
-```bash
-# ssh randerer@access.grid5000.fr
-# ssh grenoble
-ssh -J randerer@access.grid5000.fr randerer@grenoble
-
-oarsub -l walltime=1:00:00 "sudo-g5k ./border_setup.sh --start-time TEST_TIME_STAMP5 & sleep infinity"
-
-# Manual
-# sudo-g5k ./border_setup.sh --run-tag manual_launch_250_clients --clients 20 --delay 1 --messages 150 --qos 0 --size 100 --cpu 2 --ram-limit 1g & sleep infinity
-# sudo ./border_setup_launch.sh --run-tag manual_launch_250_clients --clients 20 --delay 1 --messages 150 --qos 0 --size 100 --cpu 2 --ram-limit 1g
-# sudo-g5k ./start_clients.sh --run-tag manual_launch --clients 1 --delay 1 --messages 10 --qos 0 --size 100 --brokers 1 & sleep infinity
-
-oarsub -I # "-l host=1/core=4" does not work because all cores need to be reserved for docker installation
-
-cd ..
-cd ..
-sudo-g5k home/randerer/border_setup.sh
-```
-
-# Execution Flow
-
-## Automated
-
-1. launch_experiments.sh
-    - includes configuration, either manual (e.g. step-sized) or using `./border-data-pipeline/categorial_latin_hypercube_sampling.py`
-2. launch_border_via_ssh.sh
-3. border_setup_launch.sh
-4. flexible_router.py
-5. start_clients.sh
-6. data_pipeline.sh
-    1. combine_split_subscriber_files.py
-    2. visualize_individual_experiment.py
-    3. compute_throughput_metrics.py
-    4. train_throughput_regression.py
-7. train_svm_regression.py
-8. train_random_forest.py
-
-## Manual
-TODO
-
-
-# Results
-The following scripts downloads all logs and results from the G5K network file system and unpacks them locally for further analysis.
-```bash
-./g5k_utils/get_result_data_from_zip.sh
-```
-
-
-# Benchmarks
-
-## Perf
-> NOTE (local change): To do this, simply modify the "jorammq-mqtt-1.21.0-SNAPSHOT/conf/jorammq.xml" file. Set "com.scalagent.jorammq.mqtt.serverMaxPendingConnections" value to 1000
-
-> NOTE (local change): To do this, simply modify the "jorammq-mqtt-1.21.0-SNAPSHOT/conf/jorammq.xml" file. Increase "com.scalagent.jorammq.mqtt.serverConnectionTimeout" value
-
-
-```
-./internal_benchmarking/jorammq-mqtt-perf-1.21.0-SNAPSHOT/bin/multismartphone
-```
-
-# ML Pipeline
-```bash
-# 20260606162745 20260607220913
-./data_pipeline.sh --timestamp 20260609161555 --variable-column connection_rts
-./data_pipeline.sh --timestamp 20260611210250 --variable-column message_size_qos0
-./data_pipeline.sh --timestamp 20260611210417 --variable-column message_size_qos2
-./data_pipeline.sh --timestamp 20260615001353
-
-
-
-#BASE_LOAD_CPU=12
-#BASE_LOAD_RAM=6
-BASE_LOAD_CPU=5.28
-BASE_LOAD_RAM=16.65
-python3 ./border-data-pipeline/predict_additive_model.py --model-dir './border-data-pipeline/outputs/regressions/joram/ram/*.json' --validate-against ./border-data-pipeline/inputs/training_data/validation_data_metrics_scenario_1_adjusted_throughput.csv --base-load $BASE_LOAD_RAM --include-capacity-limited
-
-BASE_LOAD_CPU=1
-python3 ./border-data-pipeline/predict_additive_model.py --model-dir './border-data-pipeline/outputs/regressions/joram/cpu/*.json' --validate-against ./border-data-pipeline/inputs/training_data/validation_data_metrics_joram_msg_size_adjusted.csv --base-load $BASE_LOAD_CPU
-
-BASE_LOAD_RAM=20
-python3 ./border-data-pipeline/predict_additive_model.py --model-dir './border-data-pipeline/outputs/regressions/joram/ram/*.json' --validate-against ./border-data-pipeline/inputs/training_data/validation_data_metrics_joram_msg_size_adjusted.csv --base-load $BASE_LOAD_RAM 
-
-BASE_LOAD_CPU=1
-python3 ./border-data-pipeline/predict_additive_model.py --model-dir './border-data-pipeline/outputs/regressions/joram/cpu/*.json' --validate-against ./border-data-pipeline/inputs/training_data/validation_data_metrics_joram_msg_size_adjusted.csv --base-load $BASE_LOAD_CPU --include-capacity-limited
-
-BASE_LOAD_RAM=20
-python3 ./border-data-pipeline/predict_additive_model.py --model-dir './border-data-pipeline/outputs/regressions/joram/ram/*.json' --validate-against ./border-data-pipeline/inputs/training_data/validation_data_metrics_joram_msg_size_adjusted.csv --base-load $BASE_LOAD_RAM --include-capacity-limited
-
-BASE_LOAD_CPU=2
-python3 ./border-data-pipeline/predict_additive_model.py --model-dir './border-data-pipeline/outputs/regressions/joram/ram/*.json' --validate-against ./border-data-pipeline/inputs/training_data/validation_data_metrics_scenario_2.csv --base-load $BASE_LOAD_RAM --include-capacity-limited
-
-validation_data_metrics_scenario_1_adjusted_throughput
-validation_data_metrics_scenario_2_adjusted_message_size
-
-python3 ./border-data-pipeline/train_svm_regression.py --timestamp combined_data_3 --include-capacity-limited --validate-against ./border-data-pipeline/inputs/training_data/validation_data_metrics_scenario_2_adjusted_message_size.csv --random-search-iterations 30
-
-python3 ./border-data-pipeline/train_svm_regression.py --timestamp combined_data_2 --validate-against ./border-data-pipeline/inputs/training_data/combined_data_all_randomized_metrics.csv --include-capacity-limited
-
-python3 ./border-data-pipeline/train_random_forest.py --timestamp combined_data_3 --validate-against ./border-data-pipeline/inputs/training_data/validation_data_metrics_scenario_1_adjusted_throughput.csv --include-capacity-limited
-
-python3 ./border-data-pipeline/train_svm_regression.py --timestamp combined_data_2 --include-capacity-limited --random-search-iterations 30
-
-python3 ./border-data-pipeline/train_svm_regression.py --timestamp combined_data_2 --validate-against ./border-data-pipeline/inputs/training_data/validation_data_metrics_joram_msg_size_adjusted.csv
-
-python3 ./border-data-pipeline/train_svm_regression.py --timestamp combined_data_2 --validate-against ./border-data-pipeline/inputs/training_data/validation_data_metrics_scenario_1.csv --include-capacity-limited
-
-python3 ./border-data-pipeline/train_svm_regression.py --timestamp combined_data_2 --validate-against ./border-data-pipeline/inputs/training_data/combined_data_all_randomized_metrics.csv --include-capacity-limited
-
-
-
-python3 ./border-data-pipeline/train_svm_regression.py --timestamp combined_data_2 --validate-against ./border-data-pipeline/inputs/training_data/validation_data_metrics_scenario_1_adjusted_throughput.csv --include-capacity-limited
-```
-
-```bash
-python3 categorial_latin_hypercube_sampling.py --samples 20 --clients "2,5,10,20,30" --throughput "100,250,500,1000,2000" --qos "0,1,2" --size "100,500,1000,5000,10000" --cpu "2,4,8,16"
-
-python3 ./border-data-pipeline/categorial_latin_hypercube_sampling.py --samples 50 --clients_qos0 "50,100,150" --throughput_qos0 "100,4375,8750,13125,17500" --size_qos0 "100,250,500,750,1000" --clients_qos1 "50,100,150" --throughput_qos1 "100,4375,8750,13125,17500" --size_qos1 "100,250,500,750,1000" --clients_qos2 "50,100,150" --throughput_qos2 "100,1250,2500,3750,5000" --size_qos2 "100,250,500,750,1000" --cpu "2,4,8,16"
-```
-
 # Debugging
+
+## Connect to node started by automation
+The machine 
+
+TODO explain /tmp/20260629154136_0__C01_D020_M00_S0100_C1100_D1500_M1600_S1100_C21_D220_M20_S2100_CPU2_RAM1g.txt somewhere
 
 ## Read mqtt messages
 ```bash
@@ -239,41 +355,4 @@ sudo-g5k env "PATH=$PATH" mn -c
 ```bash
 docker stop $(docker ps -a -q)
 docker rm $(docker ps -a -q)
-```
-
-
-# Other Tools
-
-## JoramMQ (local)
-
-> NOTE (local change): To do this, simply modify the "conf/jorammq.xml" file. Lines 58-59 contain the definition of the property "Transaction.LevelDBRepository.useJavaImpl," which is commented out;
-
-```bash
-export JMX_PORT=3333 # for profiling
-./jorammq-mqtt-1.21.0-SNAPSHOT/bin/jorammq-server
-```
-
-### Docker
-```bash
-docker run --name jorammq -p 1883:1883/tcp -p 18090:18090/tcp joram_1.21.0:latest
-```
-
-
-## mqtttest
-```bash
-java -jar jorammq-mqtt-1.21.0-SNAPSHOT/lib/testmqtthivev5.jar help
-
-java -Dthroughput=100000 -jar jorammq-mqtt-1.21.0-SNAPSHOT/lib/testmqtthivev5.jar 1
-```
-
-## Java UI
-```bash
-export PATH_TO_FX=/Users/z003s17d/Projects/Uni/MasterThesis/javafx-sdk-21.0.10_aarch/lib
-java --module-path $PATH_TO_FX --add-modules javafx.controls,javafx.fxml -cp "jaxb-api.jar:jaxb-impl.jar:jaxb-core.jar:activation.jar:mqtt-spy-0.5.4-jar-with-dependencies.jar" pl.baczkowicz.mqttspy.Main
-```
-
-## Python Script
-```
-source paho.mqtt.python/paho_venv/bin/activate
-python3 paho.mqtt.python/src/main.py
 ```
