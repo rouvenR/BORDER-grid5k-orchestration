@@ -336,9 +336,11 @@ oarsub -l nodes=2 -I # <- connects to the first node, load has to be distributed
 # Debugging
 
 ## Connect to node started by automation
-The machine 
+When nodes are launched using the automated pipeline, their ID is stored in a temporary file. If you want to connect to one for debugging reasons, check under "/tmp/\<TIMESTAMP\>_\<INDEX\>__\<RUNTAG\>.txt". For example:
 
-TODO explain /tmp/20260629154136_0__C01_D020_M00_S0100_C1100_D1500_M1600_S1100_C21_D220_M20_S2100_CPU2_RAM1g.txt somewhere
+```bash
+cat /tmp/20260629154136_0__C01_D020_M00_S0100_C1100_D1500_M1600_S1100_C21_D220_M20_S2100_CPU2_RAM1g.txt
+```
 
 ## Read mqtt messages
 ```bash
