@@ -17,10 +17,14 @@ chmod +x ./g5k_utils/upload_relevant_code_to_g5k.sh
 ./g5k_utils/upload_relevant_code_to_g5k.sh
 
 ssh -J randerer@access.grid5000.fr randerer@grenoble "
+    chmod +x automated_data_pipeline.sh &&
     chmod +x border_setup_launch.sh &&
     chmod +x launch_border_via_ssh.sh &&
     chmod +x data_pipeline.sh &&
     chmod +x launch_experiments.sh &&
     chmod +x ./border/containernet/BORDER/border_setup_kadeploy.sh &&
-    chmod +x ./border/containernet/BORDER/start_clients.sh
+    chmod +x ./border/containernet/BORDER/start_clients.sh &&
+    mkdir logs &&
+    mkdir processed_results &&
+    border-custom-environment.yaml
 "
