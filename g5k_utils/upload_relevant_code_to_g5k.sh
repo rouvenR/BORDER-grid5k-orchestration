@@ -44,6 +44,10 @@ scp "$PROJECT_ROOT_DIR/check_logs_for_errors.py" randerer@access.grid5000.fr:gre
 pids+=("$!")
 scp "$PROJECT_ROOT_DIR/data_pipeline.sh" randerer@access.grid5000.fr:grenoble/data_pipeline.sh &
 pids+=("$!")
+scp "$PROJECT_ROOT_DIR/border-custom-environment.yaml" randerer@access.grid5000.fr:grenoble/border-custom-environment.yaml &
+pids+=("$!")
+
+
 
 # scp "$PROJECT_ROOT_DIR/jorammq-deployment/jorammq-mqtt-trial-1.22.0-SNAPSHOT.zip" randerer@access.grid5000.fr:grenoble/jorammq-deployment/jorammq-mqtt-trial-1.22.0-SNAPSHOT.zip
 
