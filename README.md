@@ -39,6 +39,7 @@ The root folder of your home directory on G5K must contain the `border-custom-en
 > NOTE: The URL should contain the original username r\_anderer (without the \_), not your personal one. 
 
 ```bash
+./connect_to_g5k_frontend.sh
 # On your G5K home directory
 wget "http://public.grenoble.grid5000.fr/~randerer/environment_image_border_v2.tar.zst"
 ```
