@@ -1,3 +1,6 @@
+# Prerequesites
+- [SSH connection to G5K](https://www.grid5000.fr/w/Getting_Started#Connecting_for_the_first_time)
+- [SSH connection to Github](https://docs.github.com/en/authentication/connecting-to-github-with-ssh)
 
 # Setup Code
 This section contains instructions for initial setup and how to apply code updates.
