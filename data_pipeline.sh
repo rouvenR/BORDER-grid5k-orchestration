@@ -36,9 +36,6 @@ if [ -z "$TIMESTAMP" ]; then
     exit 2
 fi
 
-BASE_LOAD_CPU=0
-BASE_LOAD_RAM=0
-
 mkdir -p logs
 ERROR_LOG_FILE="logs/${TIMESTAMP}_errors.txt"
 
@@ -61,9 +58,9 @@ python3 ./border-data-pipeline/compute_throughput_metrics.py --timestamp "$TIMES
 if [ -z "$VARIABLE_COLUMN" ]; then
     echo "Skipping regression training since --variable-column is not set"
 else
-    python3 ./border-data-pipeline/train_throughput_regression.py --timestamp "$TIMESTAMP" --variable-column "$VARIABLE_COLUMN" --target cpu_mean_consumption --base-load "$BASE_LOAD_CPU"
-    python3 ./border-data-pipeline/train_throughput_regression.py --timestamp "$TIMESTAMP" --variable-column "$VARIABLE_COLUMN" --target ram_mean_consumption --base-load "$BASE_LOAD_RAM"
-    python3 ./border-data-pipeline/train_throughput_regression.py --timestamp "$TIMESTAMP" --variable-column "$VARIABLE_COLUMN" --target received_throughput_mean --base-load "$BASE_LOAD_CPU"
-    python3 ./border-data-pipeline/train_throughput_regression.py --timestamp "$TIMESTAMP" --variable-column "$VARIABLE_COLUMN" --target cpu_factor_compared_to_min --base-load "$BASE_LOAD_CPU"
-    python3 ./border-data-pipeline/train_throughput_regression.py --timestamp "$TIMESTAMP" --variable-column "$VARIABLE_COLUMN" --target ram_factor_compared_to_min --base-load "$BASE_LOAD_RAM"
+    python3 ./border-data-pipeline/train_throughput_regression.py --timestamp "$TIMESTAMP" --variable-column "$VARIABLE_COLUMN" --target cpu_mean_consumption
+    python3 ./border-data-pipeline/train_throughput_regression.py --timestamp "$TIMESTAMP" --variable-column "$VARIABLE_COLUMN" --target ram_mean_consumption
+    python3 ./border-data-pipeline/train_throughput_regression.py --timestamp "$TIMESTAMP" --variable-column "$VARIABLE_COLUMN" --target received_throughput_mean
+    python3 ./border-data-pipeline/train_throughput_regression.py --timestamp "$TIMESTAMP" --variable-column "$VARIABLE_COLUMN" --target cpu_factor_compared_to_min
+    python3 ./border-data-pipeline/train_throughput_regression.py --timestamp "$TIMESTAMP" --variable-column "$VARIABLE_COLUMN" --target ram_factor_compared_to_min
 fi
