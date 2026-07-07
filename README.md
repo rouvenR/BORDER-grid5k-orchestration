@@ -30,10 +30,10 @@ When working on this project, the easiest way to apply changes is to work on the
 ## G5K Custom Environment
 A G5K custom environment exists that contains all the required installations (e.g. Docker) for experiment efficiency and reproducability.
 
-## Option 1 (default): Reuse Custom Environment
+### Option 1 (default): Reuse Custom Environment
 The root folder of your home directory on G5K must contain the `border-custom-environment.yaml` and `environment_image_border_v2.tar.zst`. The former is part of this repository and automatically uploaded. The latter has to be copied from TODO.
 
-## Option 2: Rebuild / Update Custom Environment
+### Option 2: Rebuild / Update Custom Environment
 Follow the [G5K environment creation guide](https://www.grid5000.fr/w/Environment_creation). The existing environment was built using the script shown below on the deployment node. Adjust it to your updates to make the process reproducable.
 
 ```bash
@@ -84,6 +84,12 @@ In this flow, experiments are scheduled at night and a dedicated node per experi
 ./launch_experiments.sh --night --analyze-data
 ```
 
+To download the results the next day, you can run the following command:
+
+```bash
+scp -r  randerer@access.grid5000.fr:grenoble/processed_results/ .
+```
+
 ## Automated Experiments with manual data analysis
 This flow executes the configured experiments directly. After waiting for the results, data analysis is executed on G5K frontend.
 
@@ -93,7 +99,13 @@ This flow executes the configured experiments directly. After waiting for the re
 
 # Wait for experiments to finish (check with "oarstat -u" until there is no active nodes)
 
-./data_pipeline.sh --timestamp <TIMESTAMP> # Find timestamp in logs or under s ./results/single_broker_results/
+./data_pipeline.sh --timestamp <TIMESTAMP> # Find timestamp in logs or under ./results/single_broker_results/
+```
+
+To download the results, you can use the following script:
+
+```bash
+./g5k_utils/get_result_artefacts.sh
 ```
 
 ## Automated Experiments with local data analysis
@@ -132,7 +144,7 @@ sudo ./start_clients.sh --run-tag 20260515234745_3__C01_D012_M00_S0100_C1250_D14
 ```
 
 ## Next steps
-All of the flows explained above will create the following artefacts. Depending on the flow executed, they are either on your G5K home directory or on your local machine.
+All of the flows explained above will create the following artefacts. Depending on the flow executed, they are either on your G5K home directory or on your local machine. Refer to "Data Formats" for more information on the raw data and metrics.
 + raw MQTT and hardware traces (./border-data-pipeline/inputs/result_data)
 + metrics files (./border-data-pipeline/inputs/training_data)
 + experiment visualisations (./border-data-pipeline/outputs/plots/raw)
@@ -314,6 +326,36 @@ python3 ./border-data-pipeline/predict_additive_model.py \
 
 For step 9 specifically, collect the JSON outputs you want to combine into a dedicated input folder (or use a dedicated output subfolder), then pass that folder as a glob via `--model-dir`.
 
+
+# Data Formats
+
+## MQTT Connection Traces
+> ./border-data-pipeline/inputs/result_data/experiments/conn_*
+
+| broker | client | conn | connack |
+| --- | --- | ---: | ---: |
+| 10.0.0.100 | b'subThread-1-efexpz' | 1779919122188 | 1779919122345 |
+
+## MQTT E2E Traces 
+> ./border-data-pipeline/inputs/result_data/experiments/e2e_*
+
+| receiver_brk | receiver_id | src_brk | client_num | sent | msg_id | received | qos |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 10.0.0.100 | b'subThread-1-rdokdj' | 0 | 1 | 1780927657309 | 0 | 1780927657342 | 1 |
+
+## Hardware Traces
+> ./border-data-pipeline/inputs/result_data/*_stats.txt
+
+| timestamp | container_id | name | cpu_pct | mem_usage_limit | mem_pct | net_io |
+| --- | --- | --- | ---: | --- | ---: | --- |
+| "2026-05-27-22:09:41" | b632688b8c54e3e5fb6ed7f772d67e0125c60a4d55e6c42ac931daeaab8e6f34 | mn.pub0 | 0.00% | 1.746MiB / 187.5GiB | 0.00% | 936B / 126B |
+
+## Metrics
+> ./border-data-pipeline/inputs/training_data
+
+| run_tag | number_of_clients_qos0 | delay_qos0 | number_of_messages_qos0 | message_size_qos0 | number_of_clients_qos1 | delay_qos1 | number_of_messages_qos1 | message_size_qos1 | number_of_clients_qos2 | delay_qos2 | number_of_messages_qos2 | message_size_qos2 | cpu | ram | active_window_start | active_window_end | active_window_seconds | throughput_window_bins | sent_throughput_mean | sent_throughput_median | received_throughput_mean | received_throughput_completion_percentage | received_throughput_median | message_loss | malformed_e2e_rows_skipped | cpu_mean_consumption | ram_mean_consumption | cpu_reached_maximum_capacity | ram_reached_maximum_capacity | incoming_throughput_qos0 | incoming_throughput_qos1 | incoming_throughput_qos2 | cpu_factor_compared_to_min | ram_factor_compared_to_min | throughput_reached_maximum_capacity | message_loss_threshold_exceeded |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | --- |
+| 20260615001353_0__C050_D02500_M0120_S01000_C1100_D1114_M12625_S1500_C250_D2200_M21500_S2500_CPU16_RAM8g | 50 | 2500 | 120 | 1000 | 100 | 114 | 2625 | 500 | 50 | 200 | 1500 | 500 | 16 | 8g | 1781475830000 | 1781476132000 | 303.0 | 303 | 5676.534653465346 | 5730.0 | 5676.534653465346 | 0.9900932535113975 | 5733.0 | -2490.0 | 0 | 28.814225045787545 | 4.765787545787545 | false | false | 100.0 | 4383.333333333334 | 1250.0 | 31.41557365388005 | 1.0 | False | False |
 
 
 # Grid5000 Important Commands
