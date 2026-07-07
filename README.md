@@ -14,7 +14,7 @@ This section contains instructions for initial setup and how to apply code updat
 
 
 ## Note on G5K Username
-Please search for "randerer" across the whole code basis and replace it with your personal G5K user name
+Please search for "randerer" across the whole code basis and replace it with your personal G5K user name. This is with the exception of `wget "http://public.grenoble.grid5000.fr/~randerer/environment_image_border_v2.tar.zst"`.
 
 ## Initialize G5K
 Run the following command once. This uploads all relevant code to G5K and created required folders and permissions.
@@ -34,7 +34,14 @@ When working on this project, the easiest way to apply changes is to work on the
 A G5K custom environment exists that contains all the required installations (e.g. Docker) for experiment efficiency and reproducability.
 
 ### Option 1 (default): Reuse Custom Environment
-The root folder of your home directory on G5K must contain the `border-custom-environment.yaml` and `environment_image_border_v2.tar.zst`. The former is part of this repository and automatically uploaded. The latter has to be copied from TODO.
+The root folder of your home directory on G5K must contain the `border-custom-environment.yaml` and `environment_image_border_v2.tar.zst`. The former is part of this repository and automatically uploaded. The latter has to be copied from the public repository using the following command:
+
+> NOTE: The URL should contain the original username r\_anderer (without the \_), not your personal one. 
+
+```bash
+# On your G5K home directory
+wget "http://public.grenoble.grid5000.fr/~randerer/environment_image_border_v2.tar.zst"
+```
 
 ### Option 2: Rebuild / Update Custom Environment
 Follow the [G5K environment creation guide](https://www.grid5000.fr/w/Environment_creation). The existing environment was built using the script shown below on the deployment node. Adjust it to your updates to make the process reproducable.
