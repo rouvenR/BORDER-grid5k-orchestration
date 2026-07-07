@@ -16,3 +16,4 @@ vmq_mzbench/
 mzbench-docker-deployment/
 border-data-pipeline/
 __pycache__/
+processed_results/
