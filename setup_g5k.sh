@@ -25,6 +25,5 @@ ssh -J randerer@access.grid5000.fr randerer@grenoble "
     chmod +x ./border/containernet/BORDER/border_setup_kadeploy.sh &&
     chmod +x ./border/containernet/BORDER/start_clients.sh &&
     mkdir logs &&
-    mkdir processed_results &&
-    border-custom-environment.yaml
+    mkdir processed_results
 "
