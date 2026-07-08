@@ -48,6 +48,8 @@ scp "$PROJECT_ROOT_DIR/data_pipeline.sh" randerer@access.grid5000.fr:grenoble/da
 pids+=("$!")
 scp "$PROJECT_ROOT_DIR/border-custom-environment.yaml" randerer@access.grid5000.fr:grenoble/border-custom-environment.yaml &
 pids+=("$!")
+scp "$PROJECT_ROOT_DIR/border-data-pipeline/__helpers/metrics_common.py" randerer@access.grid5000.fr:grenoble/border-data-pipeline/__helpers/metrics_common.py &
+pids+=("$!")
 
 
 
