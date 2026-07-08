@@ -34,14 +34,14 @@ When working on this project, the easiest way to apply changes is to work on the
 A G5K custom environment exists that contains all the required installations (e.g. Docker) for experiment efficiency and reproducability.
 
 ### Option 1 (default): Reuse Custom Environment
-The root folder of your home directory on G5K must contain the `border-custom-environment.yaml` and `environment_image_border_v2.tar.zst`. The former is part of this repository and automatically uploaded. The latter has to be copied from the public repository using the following command:
+The root folder of your home directory on G5K must contain the `border-custom-environment.yaml` and `border_environment_image_no_special_user_permissions.tar.zst`. The former is part of this repository and automatically uploaded. The latter has to be copied from the public repository using the following command:
 
 > NOTE: The URL should contain the original username r\_anderer (without the \_), not your personal one. 
 
 ```bash
 ./connect_to_g5k_frontend.sh
 # On your G5K home directory
-wget http://public.grenoble.grid5000.fr/~randerer/environment_image_border_v2.tar.zst
+wget http://public.grenoble.grid5000.fr/~randerer/border_environment_image_no_special_user_permissions.tar.zst
 ```
 
 ### Option 2: Rebuild / Update Custom Environment
