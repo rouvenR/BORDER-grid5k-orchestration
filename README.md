@@ -14,7 +14,7 @@ This section contains instructions for initial setup and how to apply code updat
 
 
 ## Note on G5K Username
-Please search for "randerer" across the whole code basis and replace it with your personal G5K user name. This is with the exception of `wget "http://public.grenoble.grid5000.fr/~randerer/environment_image_border_v2.tar.zst"`.
+Please search for "randerer" across the whole code basis and replace it with your personal G5K user name. This is with the exception of `wget http://public.grenoble.grid5000.fr/~randerer/environment_image_border_v2.tar.zst`.
 
 ## Initialize G5K
 Run the following command once. This uploads all relevant code to G5K and created required folders and permissions.
@@ -41,7 +41,7 @@ The root folder of your home directory on G5K must contain the `border-custom-en
 ```bash
 ./connect_to_g5k_frontend.sh
 # On your G5K home directory
-wget "http://public.grenoble.grid5000.fr/~randerer/environment_image_border_v2.tar.zst"
+wget http://public.grenoble.grid5000.fr/~randerer/environment_image_border_v2.tar.zst
 ```
 
 ### Option 2: Rebuild / Update Custom Environment
@@ -173,16 +173,33 @@ The automated flow has two layers:
 2. The analysis layer, which converts raw logs and packet traces into metrics and optionally trains prediction models.
 
 ### 1. `./BORDER/launch_experiments.sh`
-
 This is the entry point for batch execution.
 
-- Defines the experiment matrix in `CONFIGS`. Each row contains the per-QoS client count, delay, message count, message size, CPU, RAM limit, scenario, and connect rate.
+#### Configuration
+Defines the experiment matrix in `CONFIGS`. Each row contains the per-QoS client count, delay, message count, message size, CPU, RAM limit, scenario, and connect rate.
+- "scenario":
+    - 0 -> `./vmq_mzbench/scenarios/1_to_1.bdl`
+    - 1 -> `./vmq_mzbench/scenarios/scenario_1_industrial_sites.bdl`
+    - 2 -> `./vmq_mzbench/scenarios/scenario_2_smart_electricity_meter.bdl`
+    - 3 -> `./vmq_mzbench/scenarios/scenario_3_mobile_clients.bdl` (not working)
+    - 4 -> `./vmq_mzbench/scenarios/changing_number_of_clients.bdl`
+- "clients_qosX": Number of clients
+- "delay_qosX": Delay in milliseconds between messages (determines throughput per client)
+- "messages_qosX": Number of messages per client (determines duration of experiment in combination with delay_qosX)
+- "size_qos": Message size in Bytes
+- "cpu": Number of cores assigned to Docker container that runs the broker
+- "ram_limit": RAM assigned to Docker container that runs the broker
+- "connect_rps" (only relevant for scenario 4): Connection rate per second
+
+#### Execution
 - Builds one `run_tag` per configuration. That timestamp-based tag is the primary identifier used throughout the whole pipeline.
 - Submits one `oarsub` job per configuration and runs `kadeploy3` before starting the actual BORDER launch.
 - Calls `./launch_border_via_ssh.sh` inside the reserved job with all resolved parameters.
 - Supports `--night` to add `-t night` to the experiment reservation.
 - Supports `--analyze-data` to schedule `./automated_data_pipeline.sh` for the same `BASE_START_TIME` on the next day at `04:30:00`.
 - Uses `VARIABLE_COLUMN` to decide which independent variable should be used when the automated analysis step trains regressions. If not set, it defaults to `message_size_qos1`.
+
+The experiments are executed on the G5k dahu cluster by default (dahu-4,dahu-5,dahu-6,dahu-7,dahu-8,dahu-9,dahu-10,dahu-11,dahu-12,dahu-13,dahu-14,dahu-15,dahu-16,dahu-17,dahu-19,dahu-20,dahu-21,dahu-22,dahu-23,dahu-24,dahu-25). This can be changed in this file if desired. Note that for comparable results, the machines configured should share the same hardware (hence the specific selection of machines above).
 
 Typical use:
 
