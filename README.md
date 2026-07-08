@@ -14,7 +14,7 @@ This section contains instructions for initial setup and how to apply code updat
 
 
 ## Note on G5K Username
-Please search for "randerer" across the whole code basis and replace it with your personal G5K user name. This is with the exception of `wget http://public.grenoble.grid5000.fr/~randerer/environment_image_border_v2.tar.zst`.
+Please search for "randerer" across the whole code basis and replace it with your personal G5K user name. This is with the exception of `wget http://public.grenoble.grid5000.fr/~randerer/border_environment_image_no_special_user_permissions.tar.zst`.
 
 ## Initialize G5K
 Run the following command once. This uploads all relevant code to G5K and created required folders and permissions.
@@ -47,8 +47,9 @@ wget http://public.grenoble.grid5000.fr/~randerer/environment_image_border_v2.ta
 ### Option 2: Rebuild / Update Custom Environment
 Follow the [G5K environment creation guide](https://www.grid5000.fr/w/Environment_creation). The existing environment was built using the script shown below on the deployment node. Adjust it to your updates to make the process reproducable.
 
+> Use "debian11-nfs" as base image
+
 ```bash
-# On G5K /home/randerer
 border_setup_kadeploy.sh
 ```
 
@@ -139,8 +140,9 @@ In this flow, a node is launched manually as well as the experiment and launch o
 ```bash
 oarsub -I -t deploy
 kadeploy3 -a border-custom-environment.yaml -o /tmp/manual_launch_n.txt
-ssh MACHINE_ID
+ssh root@MACHINE_ID # Retrieve MACHINE_ID in form ot "dahu-x" from command above or "cat /tmp/manual_launch_n.txt"
 
+cd /home/randerer
 # Set --run-tests to "true" for automated tests 
 sudo ./border_setup_launch.sh --run-tag syntax_test --clients-qos0 1 --clients-qos1 250 --clients-qos2 1 --delay-qos0 12 --delay-qos1 14 --delay-qos2 12 --messages-qos0 0 --messages-qos1 75000 --messages-qos2 0 --size-qos0 100 --size-qos1 100 --size-qos2 100 --cpu 2 --ram-limit 1g --broker-type JORAMMQ --run-tests false
 

@@ -9,7 +9,7 @@ visibility: private
 destructive: false
 os: linux
 image:
-  file: environment_image_border_v2.tar.zst
+  file: border_environment_image_no_special_user_permissions.tar.zst
   kind: tar
   compression: zstd
 postinstalls:
