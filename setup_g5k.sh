@@ -3,7 +3,7 @@
 ssh -J randerer@access.grid5000.fr randerer@grenoble "
     mkdir border &&
     cd border &&
-    git clone https://github.com/containernet/containernet.git &&
+    git clone https://github.com/rouvenR/containernet.git &&
     cd containernet &&
     mkdir BORDER
 "
