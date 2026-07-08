@@ -95,7 +95,7 @@ In this flow, experiments are scheduled at night and a dedicated node per experi
 
 ```bash
 ./connect_to_g5k_frontend.sh
-./launch_experiments.sh --night --analyze-data --rebuild-images
+./launch_experiments.sh --night --analyze-data --rebuild-images true
 ```
 
 To download the results the next day, you can run the following command:
@@ -109,7 +109,7 @@ This flow executes the configured experiments directly. After waiting for the re
 
 ```bash
 ./connect_to_g5k_frontend.sh
-./launch_experiments.sh --rebuild-images
+./launch_experiments.sh --rebuild-images true
 
 # Wait for experiments to finish (check with "oarstat -u" until there is no active nodes)
 
@@ -127,7 +127,7 @@ In this flow, experiments are started directly, but instead of the data analysis
 
 ```bash
 ./connect_to_g5k_frontend.sh
-./launch_experiments.sh --rebuild-images
+./launch_experiments.sh --rebuild-images true
 exit
 
 # Wait for experiments to finish
