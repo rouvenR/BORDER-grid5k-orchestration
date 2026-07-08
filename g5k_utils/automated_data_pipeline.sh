@@ -34,17 +34,17 @@ done
 zip -r results_${TIMESTAMP}.zip results/
 cd /border-project/
 
-mkdir border-data-pipeline
+mkdir -p border-data-pipeline
 cp /home/randerer/border-data-pipeline/* border-data-pipeline
 cp /home/randerer/data_pipeline.sh data_pipeline.sh
 cp /home/randerer/check_logs_for_errors.py check_logs_for_errors.py
 cp /home/randerer/results_${TIMESTAMP}.zip results.zip
 unzip results.zip
 cd border-data-pipeline
-mkdir inputs
-mkdir outputs
+mkdir -p inputs
+mkdir -p outputs
 cd inputs
-mkdir result_data
+mkdir -p result_data
 cd result_data
 cp -r /border-project/results/single_broker_results/* ./
 cd experiments

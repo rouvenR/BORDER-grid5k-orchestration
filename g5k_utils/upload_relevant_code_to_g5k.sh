@@ -20,6 +20,8 @@ scp "$PROJECT_ROOT_DIR/BORDER/launch_border_via_ssh.sh" randerer@access.grid5000
 pids+=("$!")
 scp "$PROJECT_ROOT_DIR/BORDER/clients/alpine_container/sub_thread.py" randerer@access.grid5000.fr:grenoble/border/containernet/BORDER/clients/alpine_container/sub_thread.py &
 pids+=("$!")
+scp "$PROJECT_ROOT_DIR/BORDER/rebuild_images.sh" randerer@access.grid5000.fr:grenoble/rebuild_images.sh &
+pids+=("$!")
 scp "$PROJECT_ROOT_DIR/jorammq-deployment/Dockerfile" randerer@access.grid5000.fr:grenoble/jorammq-deployment/Dockerfile &
 pids+=("$!")
 scp "$PROJECT_ROOT_DIR/jorammq-deployment/build.sh" randerer@access.grid5000.fr:grenoble/jorammq-deployment/build.sh &

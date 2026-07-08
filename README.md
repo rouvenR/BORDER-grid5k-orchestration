@@ -88,12 +88,14 @@ This project contains the scripts used to analyse and process the traces created
 # Running Application
 This section describes different flows of running the application. All of the flows use a default experiment configuration. To customize the experiments, refer to "Execution Flow -> ./BORDER/launch_experiments.sh" in the next section.
 
+> NOTE: You have to run with the flag "--rebuild-images" once, but can remove it if you didn't apply any changes to the docker images (jorammq, mzbench, BORDER subscriber)
+
 ## Fully Automated Flow
 In this flow, experiments are scheduled at night and a dedicated node per experiment set is scheduled at 04:30 in the morning to run the data analysis pipeline. Results can be retrieved from "home/randerer/processed_results" folder on G5K.
 
 ```bash
 ./connect_to_g5k_frontend.sh
-./launch_experiments.sh --night --analyze-data
+./launch_experiments.sh --night --analyze-data --rebuild-images
 ```
 
 To download the results the next day, you can run the following command:
@@ -107,7 +109,7 @@ This flow executes the configured experiments directly. After waiting for the re
 
 ```bash
 ./connect_to_g5k_frontend.sh
-./launch_experiments.sh
+./launch_experiments.sh --rebuild-images
 
 # Wait for experiments to finish (check with "oarstat -u" until there is no active nodes)
 
@@ -125,7 +127,7 @@ In this flow, experiments are started directly, but instead of the data analysis
 
 ```bash
 ./connect_to_g5k_frontend.sh
-./launch_experiments.sh
+./launch_experiments.sh --rebuild-images
 exit
 
 # Wait for experiments to finish
@@ -139,16 +141,16 @@ In this flow, a node is launched manually as well as the experiment and launch o
 
 ```bash
 oarsub -I -t deploy
-kadeploy3 -a border-custom-environment.yaml -o /tmp/manual_launch_n.txt
+kadeploy3 -a border-custom-environment.yaml
 ssh root@MACHINE_ID # Retrieve MACHINE_ID in form ot "dahu-x" from command above or "cat /tmp/manual_launch_n.txt"
 
 cd /home/randerer
 # Set --run-tests to "true" for automated tests 
-sudo ./border_setup_launch.sh --run-tag syntax_test --clients-qos0 1 --clients-qos1 250 --clients-qos2 1 --delay-qos0 12 --delay-qos1 14 --delay-qos2 12 --messages-qos0 0 --messages-qos1 75000 --messages-qos2 0 --size-qos0 100 --size-qos1 100 --size-qos2 100 --cpu 2 --ram-limit 1g --broker-type JORAMMQ --run-tests false
+./border_setup_launch.sh --run-tag 20260515234745_0__C01_D012_M00_S0100_C1250_D14_M175000_S1100_C21_D212_M20_S2100_CPU2_RAM1g --clients-qos0 1 --clients-qos1 250 --clients-qos2 1 --delay-qos0 12 --delay-qos1 14 --delay-qos2 12 --messages-qos0 0 --messages-qos1 25000 --messages-qos2 0 --size-qos0 100 --size-qos1 100 --size-qos2 100 --cpu 2 --ram-limit 1g --broker-type JORAMMQ --run-tests false
 
 # Wait for framework to launch
 
-sudo ./start_clients.sh --run-tag 20260515234745_3__C01_D012_M00_S0100_C1250_D14_M175000_S1100_C21_D212_M20_S2100_CPU2_RAM1g --clients-qos0 1 --clients-qos1 250 --clients-qos2 1 --delay-qos0 12 --delay-qos1 14 --delay-qos2 12 --messages-qos0 0 --messages-qos1 75000 --messages-qos2 0 --size-qos0 100 --size-qos1 100 --size-qos2 100 --brokers 1 --name /home/randerer/results/single_broker_results
+./start_clients.sh --run-tag 20260515234745_0__C01_D012_M00_S0100_C1250_D14_M175000_S1100_C21_D212_M20_S2100_CPU2_RAM1g --clients-qos0 1 --clients-qos1 250 --clients-qos2 1 --delay-qos0 12 --delay-qos1 14 --delay-qos2 12 --messages-qos0 0 --messages-qos1 25000 --messages-qos2 0 --size-qos0 100 --size-qos1 100 --size-qos2 100 --brokers 1 --name /home/randerer/results/single_broker_results
 
 # Wait for experiments to finish
 
@@ -422,7 +424,7 @@ sudo mosquitto_sub -v -t "test" > mylog.txt
 
 ## Mininet Cleanup
 ```bash
-sudo-g5k env "PATH=$PATH" mn -c
+/border-project/containernet/venv/bin/mn -c
 ```
 
 ## Remove all Docker containers

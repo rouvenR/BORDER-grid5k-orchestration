@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
 ssh -J randerer@access.grid5000.fr randerer@grenoble "
-    mkdir border &&
+    mkdir -p border &&
     cd border &&
     git clone https://github.com/rouvenR/containernet.git &&
     cd containernet &&
-    mkdir BORDER
+    mkdir -p BORDER
 "
 
 scp -r  ./BORDER randerer@access.grid5000.fr:grenoble/border/containernet/
@@ -24,6 +24,7 @@ ssh -J randerer@access.grid5000.fr randerer@grenoble "
     chmod +x launch_experiments.sh &&
     chmod +x ./border/containernet/BORDER/border_setup_kadeploy.sh &&
     chmod +x ./border/containernet/BORDER/start_clients.sh &&
-    mkdir logs &&
-    mkdir processed_results
+    chmod +x rebuild_images.sh &&
+    mkdir -p logs &&
+    mkdir -p processed_results
 "
